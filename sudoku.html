@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独 - Sudoku</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #2d3436;
+        }
+        h1 {
+            font-weight: 300;
+            font-size: 2.5rem;
+            letter-spacing: 8px;
+            margin-bottom: 30px;
+            color: #2d3436;
+        }
+        h1 span {
+            color: #0984e3;
+        }
+        .controls {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: 1px solid #dfe6e9;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+            color: #636e72;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        button:hover {
+            background: #0984e3;
+            color: #fff;
+            border-color: #0984e3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+        }
+        button.active {
+            background: #0984e3;
+            color: #fff;
+            border-color: #0984e3;
+        }
+        .board-wrapper {
+            background: #fff;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        #sudoku {
+            display: grid;
+            grid-template-columns: repeat(9, 45px);
+            gap: 0;
+            background: #2d3436;
+            border: 2px solid #0984e3;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cell {
+            width: 45px;
+            height: 45px;
+            background: #fff;
+            border: 1px solid #dfe6e9;
+            color: #2d3436;
+            font-size: 20px;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .cell:focus {
+            background: #e8f4fd;
+            color: #0984e3;
+        }
+        .cell.fixed {
+            background: #f1f2f6;
+            color: #2d3436;
+            font-weight: 600;
+        }
+        .cell.fixed:hover {
+            background: #f1f2f6;
+        }
+        .cell:hover:not(.fixed) {
+            background: #f8f9fa;
+        }
+        /* 3x3 宫格分隔 */
+        .cell:nth-child(3n) {
+            border-right: 2px solid #0984e3;
+        }
+        .cell:nth-child(9n) {
+            border-right: 1px solid #dfe6e9;
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #0984e3;
+        }
+        /* 数字键盘 */
+        .numpad {
+            margin-top: 20px;
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .num-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid #dfe6e9;
+            background: #fff;
+            color: #636e72;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .num-btn:hover {
+            background: #0984e3;
+            color: #fff;
+            border-color: #0984e3;
+            transform: scale(1.1);
+        }
+        /* 状态消息 */
+        #message {
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 12px 30px;
+            border-radius: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .success {
+            background: rgba(46, 204, 113, 0.15);
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+        .error-msg {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>SU<span>DOKU</span></h1>
+    
+    <div class="controls">
+        <button class="active" onclick="setDifficulty(30)">简单</button>
+        <button onclick="setDifficulty(40)">中等</button>
+        <button onclick="setDifficulty(50)">困难</button>
+        <button onclick="newGame()">🔄 新游戏</button>
+        <button onclick="checkSolution()">✓ 检查</button>
+        <button onclick="solveSudoku()">💡 提示</button>
+    </div>
+
+    <div class="board-wrapper">
+        <div id="sudoku"></div>
+    </div>
+
+    <div class="numpad">
+        <button class="num-btn" onclick="inputNumber(1)">1</button>
+        <button class="num-btn" onclick="inputNumber(2)">2</button>
+        <button class="num-btn" onclick="inputNumber(3)">3</button>
+        <button class="num-btn" onclick="inputNumber(4)">4</button>
+        <button class="num-btn" onclick="inputNumber(5)">5</button>
+        <button class="num-btn" onclick="inputNumber(6)">6</button>
+        <button class="num-btn" onclick="inputNumber(7)">7</button>
+        <button class="num-btn" onclick="inputNumber(8)">8</button>
+        <button class="num-btn" onclick="inputNumber(9)">9</button>
+        <button class="num-btn" onclick="inputNumber(0)">X</button>
+    </div>
+
+    <div id="message"></div>
+
+    <script>
+        let solution = [];
+        let currentDifficulty = 30;
+        let selectedCell = null;
+        
+        function generateSudoku() {
+            solution = Array(81).fill(0);
+            fillSudoku(0);
+            return [...solution];
+        }
+
+        function fillSudoku(index) {
+            if (index === 81) return true;
+            
+            const row = Math.floor(index / 9);
+            const col = index % 9;
+            const nums = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            
+            for (let num of nums) {
+                if (isValid(solution, row, col, num)) {
+                    solution[index] = num;
+                    if (fillSudoku(index + 1)) return true;
+                    solution[index] = 0;
+                }
+            }
+            return false;
+        }
+
+        function isValid(board, row, col, num) {
+            for (let c = 0; c < 9; c++) {
+                if (board[row * 9 + c] === num) return false;
+            }
+            for (let r = 0; r < 9; r++) {
+                if (board[r * 9 + col] === num) return false;
+            }
+            const startRow = Math.floor(row / 3) * 3;
+            const startCol = Math.floor(col / 3) * 3;
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    if (board[r * 9 + c] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function createPuzzle(fullBoard, holes) {
+            const puzzle = [...fullBoard];
+            const positions = shuffle([...Array(81).keys()]);
+            
+            for (let i = 0; i < holes; i++) {
+                puzzle[positions[i]] = 0;
+            }
+            return puzzle;
+        }
+
+        function setDifficulty(level) {
+            currentDifficulty = level;
+            document.querySelectorAll('.controls button').forEach((btn, i) => {
+                if (i < 3) btn.classList.toggle('active', btn.textContent.includes(getDiffName(level)));
+            });
+            newGame();
+        }
+
+        function getDiffName(level) {
+            if (level === 30) return '简单';
+            if (level === 40) return '中等';
+            return '困难';
+        }
+
+        function newGame() {
+            const fullBoard = generateSudoku();
+            const puzzle = createPuzzle(fullBoard, currentDifficulty);
+            renderSudoku(puzzle);
+            hideMessage();
+        }
+
+        function renderSudoku(puzzle) {
+            const container = document.getElementById('sudoku');
+            container.innerHTML = '';
+            selectedCell = null;
+            
+            for (let i = 0; i < 81; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.className = 'cell';
+                input.dataset.index = i;
+                
+                if (puzzle[i] !== 0) {
+                    input.value = puzzle[i];
+                    input.classList.add('fixed');
+                    input.readOnly = true;
+                } else {
+                    input.addEventListener('focus', () => {
+                        selectedCell = input;
+                    });
+                    input.addEventListener('input', (e) => {
+                        const val = e.target.value;
+                        if (!/^[1-9]$/.test(val)) {
+                            e.target.value = '';
+                        }
+                    });
+                }
+                
+                container.appendChild(input);
+            }
+        }
+
+        function inputNumber(num) {
+            if (selectedCell && !selectedCell.readOnly) {
+                selectedCell.value = num || '';
+            }
+        }
+
+        function getBoard() {
+            const cells = document.querySelectorAll('.cell');
+            const board = [];
+            cells.forEach(cell => {
+                board.push(cell.value ? parseInt(cell.value) : 0);
+            });
+            return board;
+        }
+
+        function checkSolution() {
+            const board = getBoard();
+            let isCorrect = true;
+            let isComplete = true;
+            
+            for (let i = 0; i < 81; i++) {
+                if (board[i] === 0) {
+                    isComplete = false;
+                } else if (board[i] !== solution[i]) {
+                    isCorrect = false;
+                }
+            }
+            
+            if (!isComplete) {
+                showMessage('请完成所有格子', 'error-msg');
+            } else if (isCorrect) {
+                showMessage('🎉 完美！你解开了数独！', 'success');
+            } else {
+                showMessage('还有错误，继续加油！', 'error-msg');
+            }
+        }
+
+        function solveSudoku() {
+            const cells = document.querySelectorAll('.cell');
+            let hintIndex = -1;
+            
+            for (let i = 0; i < 81; i++) {
+                if (!cells[i].readOnly && cells[i].value === '') {
+                    hintIndex = i;
+                    break;
+                }
+            }
+            
+            if (hintIndex >= 0) {
+                cells[hintIndex].value = solution[hintIndex];
+                cells[hintIndex].focus();
+            } else {
+                showMessage('已经填满了，请检查答案', 'error-msg');
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = type;
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+
+        newGame();
+    </script>
+</body>
+</html>
