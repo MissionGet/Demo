@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MissionGet - Wallet</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="api-service.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Orbitron", "Noto Sans SC", sans-serif;
+      min-height: 100vh;
+      background: #0a0a0f;
+      -webkit-font-smoothing: antialiased;
+    }
+    #root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const Wallet = () => {
+      const [activeTab, setActiveTab] = useState('balance');
+      const [loading, setLoading] = useState(true);
+      const [wallet, setWallet] = useState({ totalBalance: 0, available: 0, frozen: 0, todayIncome: 0, monthIncome: 0 });
+      const navigateTo = (page) => { window.location.href = page; };
+
+      useEffect(() => {
+        loadWallet();
+      }, []);
+
+      const loadWallet = async () => {
+        try {
+          // Always show demo data
+          setWallet({
+            totalBalance: 86500,
+            available: 86500,
+            frozen: 12400,
+            todayIncome: DEMO_TODAY_INCOME,
+            monthIncome: DEMO_MONTH_INCOME
+          });
+        } catch (err) {
+          console.error('加载钱包失败:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleDeposit = async () => {
+        const amount = prompt('请输入充值金额:', '1000');
+        if (!amount || isNaN(amount) || amount <= 0) return;
+        
+        try {
+          await ApiService.deposit(parseFloat(amount));
+          alert('充值成功！');
+          loadWallet();
+        } catch (err) {
+          alert('充值失败: ' + err.message);
+        }
+      };
+
+      const handleWithdraw = async () => {
+        if (!ApiService.isLoggedIn()) {
+          alert('请先登录！');
+          return;
+        }
+        const amount = prompt('请输入提现金额:\n当前可用余额: ¥' + wallet.available, '100');
+        if (!amount || isNaN(amount) || amount <= 0) return;
+        if (amount > wallet.available) {
+          alert('余额不足！');
+          return;
+        }
+        
+        try {
+          await ApiService.withdraw(parseFloat(amount));
+          alert('提现申请已提交，预计1-3个工作日到账~');
+          loadWallet();
+        } catch (err) {
+          alert('提现失败: ' + err.message);
+        }
+      };
+
+      const [transactions, setTransactions] = useState([]);
+
+      useEffect(() => {
+        loadTransactions();
+      }, []);
+
+      const loadTransactions = async () => {
+        // Always show demo data
+        setTransactions(demoTransactions);
+        setWallet(w => ({ ...w, monthIncome: DEMO_MONTH_INCOME, todayIncome: DEMO_TODAY_INCOME }));
+      };
+
+      // Fallback demo data
+      const demoTransactions = [
+        { id: 1, type: 'income', amount: 12800, desc: '任务赏金', time: '2026-03-17 14:32', status: 'completed' },
+        { id: 2, type: 'income', amount: 8500, desc: '任务赏金', time: '2026-03-15 10:20', status: 'completed' },
+        { id: 3, type: 'income', amount: 15600, desc: '任务赏金', time: '2026-03-12 16:45', status: 'completed' },
+        { id: 4, type: 'income', amount: 6200, desc: '任务赏金', time: '2026-03-10 11:30', status: 'completed' },
+        { id: 5, type: 'withdraw', amount: -35000, desc: '提现', time: '2026-03-16 10:15', status: 'completed' },
+        { id: 6, type: 'deposit', amount: 50000, desc: '充值', time: '2026-03-07 09:30', status: 'completed' },
+      ];
+
+      // 本月收入总计（演示用）
+      const DEMO_MONTH_INCOME = 43100;
+      const DEMO_TODAY_INCOME = 12800;
+
+      const styles = {
+        container: {
+          minHeight: '100vh',
+          background: '#0a0a0f',
+          position: 'relative',
+          overflow: 'hidden',
+        },
+        scanline: {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)',
+          pointerEvents: 'none',
+          zIndex: 1000,
+          animation: 'scanline 8s linear infinite',
+        },
+        gridBg: {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: 'linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+          pointerEvents: 'none',
+          zIndex: 0,
+        },
+        header: {
+          position: 'relative',
+          zIndex: 1,
+          padding: '30px 20px',
+        },
+        logo: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '30px',
+        },
+        logoIcon: {
+          fontSize: '24px',
+        },
+        logoText: {
+          fontSize: '18px',
+          fontWeight: 700,
+          background: 'linear-gradient(135deg, #00ff88, #00ccff)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        },
+        balanceCard: {
+          background: 'linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,204,255,0.15))',
+          border: '1px solid rgba(0,255,136,0.3)',
+          borderRadius: '20px',
+          padding: '30px',
+          marginBottom: '20px',
+          position: 'relative',
+          overflow: 'hidden',
+        },
+        balanceLabel: {
+          color: 'rgba(255,255,255,0.6)',
+          fontSize: '14px',
+          marginBottom: '8px',
+          fontFamily: 'Noto Sans SC',
+        },
+        balanceAmount: {
+          fontSize: '42px',
+          fontWeight: 800,
+          color: '#fff',
+          marginBottom: '20px',
+        },
+        balanceDetail: {
+          display: 'flex',
+          gap: '30px',
+        },
+        balanceItem: {
+          flex: 1,
+        },
+        balanceItemLabel: {
+          color: 'rgba(255,255,255,0.4)',
+          fontSize: '12px',
+          marginBottom: '4px',
+        },
+        balanceItemValue: {
+          color: '#00ff88',
+          fontSize: '18px',
+          fontWeight: 600,
+        },
+        frozenValue: {
+          color: '#ffaa00',
+          fontSize: '18px',
+          fontWeight: 600,
+        },
+        stats: {
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          marginBottom: '20px',
+        },
+        statCard: {
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '12px',
+          padding: '16px',
+        },
+        statLabel: {
+          color: 'rgba(255,255,255,0.5)',
+          fontSize: '12px',
+          marginBottom: '6px',
+          fontFamily: 'Noto Sans SC',
+        },
+        statValue: {
+          color: '#fff',
+          fontSize: '20px',
+          fontWeight: 700,
+        },
+        statValueGreen: {
+          color: '#00ff88',
+          fontSize: '20px',
+          fontWeight: 700,
+        },
+        actionBtns: {
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          marginBottom: '30px',
+          position: 'relative',
+          zIndex: 1,
+        },
+        actionBtn: {
+          padding: '14px 24px',
+          borderRadius: '12px',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: '15px',
+          fontWeight: 600,
+          fontFamily: 'Orbitron',
+          transition: 'all 0.3s',
+        },
+        withdrawBtn: {
+          background: 'linear-gradient(135deg, #00ff88, #00ccff)',
+          color: '#0a0a0f',
+        },
+        rechargeBtn: {
+          background: 'rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          color: '#fff',
+        },
+        section: {
+          position: 'relative',
+          zIndex: 1,
+          padding: '0 20px 20px',
+        },
+        sectionTitle: {
+          fontSize: '16px',
+          fontWeight: 700,
+          color: '#fff',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        },
+        transList: {},
+        transItem: {
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '12px',
+          padding: '14px 16px',
+          marginBottom: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+        },
+        transIcon: {
+          width: '36px',
+          height: '36px',
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '18px',
+        },
+        transInfo: {
+          flex: 1,
+        },
+        transDesc: {
+          color: '#fff',
+          fontSize: '14px',
+          marginBottom: '4px',
+          fontFamily: 'Noto Sans SC',
+        },
+        transTime: {
+          color: 'rgba(255,255,255,0.4)',
+          fontSize: '12px',
+        },
+        transAmount: {
+          fontSize: '16px',
+          fontWeight: 700,
+        },
+        amountGreen: {
+          color: '#00ff88',
+        },
+        amountRed: {
+          color: '#ff3366',
+        },
+        amountOrange: {
+          color: '#ffaa00',
+        },
+        tabs: {
+          display: 'flex',
+          gap: '10px',
+          padding: '0 20px 20px',
+          position: 'relative',
+          zIndex: 1,
+        },
+        tab: {
+          padding: '10px 20px',
+          borderRadius: '20px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          background: 'transparent',
+          color: 'rgba(255,255,255,0.6)',
+          cursor: 'pointer',
+          fontSize: '13px',
+          fontFamily: 'Orbitron',
+          transition: 'all 0.3s',
+        },
+        tabActive: {
+          background: 'rgba(0,255,136,0.2)',
+          border: '1px solid #00ff88',
+          color: '#00ff88',
+        },
+      };
+
+      const filteredTrans = activeTab === 'all' 
+        ? (transactions.length > 0 ? transactions : demoTransactions)
+        : (transactions.length > 0 ? transactions : demoTransactions).filter(t => t.type === activeTab);
+
+      const getTransIcon = (type) => {
+        switch(type) {
+          case 'income': return { bg: 'rgba(0,255,136,0.1)', icon: '💰' };
+          case 'withdraw': return { bg: 'rgba(0,204,255,0.1)', icon: '💳' };
+          case 'frozen': return { bg: 'rgba(255,170,0,0.1)', icon: '🔒' };
+          default: return { bg: 'rgba(255,255,255,0.1)', icon: '📝' };
+        }
+      };
+
+      return (
+        <div style={styles.container}>
+          <div style={styles.scanline} />
+          <div style={styles.gridBg} />
+          
+          <style>{`
+            @keyframes scanline {
+              0% { transform: translateY(0); }
+              100% { transform: translateY(50px); }
+            }
+            .withdrawBtn:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(0,255,136,0.4); }
+            .rechargeBtn:hover { background: rgba(255,255,255,0.15); }
+            .transItem:hover { border-color: rgba(0,255,136,0.3); }
+          `}</style>
+
+          {/* 固定导航栏 */}
+          <div style={{position: 'fixed', top: 20, right: 20, zIndex: 1000, display: 'flex', gap: '8px', background: 'rgba(10,10,15,0.9)', padding: '8px 12px', borderRadius: '25px', border: '1px solid rgba(0,255,136,0.2)'}}>
+            <a href="index.html" style={{color: '#00ff88', textDecoration: 'none', padding: '6px 12px', borderRadius: '15px', fontSize: '12px', fontFamily: 'Orbitron', background: 'rgba(0,255,136,0.1)'}}>🏠</a>
+            <a href="my-missions.html" style={{color: '#00ccff', textDecoration: 'none', padding: '6px 12px', borderRadius: '15px', fontSize: '12px', fontFamily: 'Orbitron'}}>📋</a>
+            <a href="messages.html" style={{color: '#fff', textDecoration: 'none', padding: '6px 12px', borderRadius: '15px', fontSize: '12px', fontFamily: 'Orbitron'}}>💬</a>
+          </div>
+
+          <div style={styles.header}>
+            <div style={styles.logo}>
+              <span style={styles.logoIcon}>⚡</span>
+              <span style={styles.logoText}>MISSIONGET</span>
+            </div>
+            
+            <div style={styles.balanceCard}>
+              <div style={styles.balanceLabel}>总资产 (元)</div>
+              <div style={styles.balanceAmount}>¥ {wallet.totalBalance.toLocaleString()}</div>
+              <div style={styles.balanceDetail}>
+                <div style={styles.balanceItem}>
+                  <div style={styles.balanceItemLabel}>可提现</div>
+                  <div style={styles.balanceItemValue}>¥ {wallet.available.toLocaleString()}</div>
+                </div>
+                <div style={styles.balanceItem}>
+                  <div style={styles.balanceItemLabel}>冻结中</div>
+                  <div style={styles.frozenValue}>¥ {wallet.frozen.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={styles.stats}>
+              <div style={styles.statCard}>
+                <div style={styles.statLabel}>今日收入</div>
+                <div style={styles.statValueGreen}>+¥ {wallet.todayIncome}</div>
+              </div>
+              <div style={styles.statCard}>
+                <div style={styles.statLabel}>本月收入</div>
+                <div style={styles.statValueGreen}>+¥ {wallet.monthIncome.toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div style={styles.actionBtns}>
+              <button className="withdrawBtn" onClick={handleWithdraw} style={{...styles.actionBtn, ...styles.withdrawBtn}}>💳 提现</button>
+              <button className="rechargeBtn" onClick={handleDeposit} style={{...styles.actionBtn, ...styles.rechargeBtn}}>💰 充值</button>
+            </div>
+          </div>
+
+          <div style={styles.tabs}>
+            {[
+              { id: 'all', label: '全部' },
+              { id: 'income', label: '收入' },
+              { id: 'withdraw', label: '提现' },
+              { id: 'frozen', label: '冻结' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === tab.id ? styles.tabActive : {})
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={styles.section}>
+            <h3 style={styles.sectionTitle}>📊 交易记录</h3>
+            <div style={styles.transList}>
+              {filteredTrans.map(trans => {
+                const iconData = getTransIcon(trans.type);
+                const isPositive = trans.amount > 0;
+                return (
+                  <div key={trans.id} style={styles.transItem}>
+                    <div style={{...styles.transIcon, background: iconData.bg}}>
+                      {iconData.icon}
+                    </div>
+                    <div style={styles.transInfo}>
+                      <div style={styles.transDesc}>{trans.desc}</div>
+                      <div style={styles.transTime}>{trans.time}</div>
+                    </div>
+                    <div style={{
+                      ...styles.transAmount,
+                      ...(isPositive ? styles.amountGreen : 
+                          trans.type === 'frozen' ? styles.amountOrange : styles.amountRed)
+                    }}>
+                      {isPositive ? '+' : ''}¥ {Math.abs(trans.amount)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Wallet />);
+  </script>
+</body>
+</html>

@@ -6,41 +6,76 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a0f; overflow: hidden; width: 100vw; height: 100vh; font-family: sans-serif; }
-        
+
         .bg { position: fixed; inset: 0; background: linear-gradient(135deg, #0a0a0f, #1a1a2e); z-index: 0; }
         .grid { position: fixed; inset: 0; background-image: linear-gradient(#00ff8805 1px, transparent 1px), linear-gradient(90deg, #00ff8805 1px, transparent 1px); background-size: 40px 40px; z-index: 1; }
-        
+
         .scene { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 10; }
         .scene.active { display: flex; }
-        
-        .title { font-size: 4rem; font-weight: 900; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: #666; margin-top: 20px; letter-spacing: 8px; }
-        
+
+        /* ========== Scene 0 标题动画 ========== */
+        .scene0-animate { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .scene0-animate.in { opacity: 1; transform: translateY(0); }
+        .scene0-title { font-size: 4rem; font-weight: 900; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .scene0-subtitle { color: #666; margin-top: 20px; letter-spacing: 8px; font-size: 1.1rem; }
+        .scene0-tagline { color: #00ff8899; margin-top: 15px; font-size: 1rem; letter-spacing: 4px; }
+        /* Scene 0 标题光晕脉冲 */
+        .scene0-title-wrap { position: relative; }
+        .scene0-title-wrap::after { content: ''; position: absolute; inset: -20px; background: radial-gradient(ellipse at center, rgba(0,255,136,0.15) 0%, transparent 70%); opacity: 0; animation: none; }
+        .scene0-animate.in .scene0-title-wrap::after { animation: titleGlow 2s ease-in-out infinite; }
+        @keyframes titleGlow {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
         .screenshot { max-width: 65%; max-height: 45%; margin-top: 60px; border-radius: 12px; box-shadow: 0 0 60px rgba(0,255,136,0.3); border: 1px solid #00ff8840; }
-        
+
         .text-block { text-align: center; max-width: 800px; padding: 40px; background: rgba(0,0,0,0.7); border-radius: 16px; border: 1px solid #00ff8830; }
         .text-line { font-size: 1.6rem; color: #fff; margin: 15px 0; opacity: 0; transform: translateY(20px); transition: all 0.5s; }
         .text-line.show { opacity: 1; transform: translateY(0); }
         .text-line .hl { color: #00ff88; font-weight: bold; }
         .text-line .ac { color: #00ccff; font-weight: bold; }
         .text-line .gold { color: #ffaa00; font-weight: bold; }
-        
+
+        /* ========== 打字机效果 ========== */
+        .typewriter { display: inline-block; overflow: hidden; white-space: nowrap; border-right: 3px solid #00ff88; animation: none; }
+        .typewriter.typing { animation: blink 0.7s step-end infinite; }
+        .typewriter.done { border-right-color: transparent; animation: none; }
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        /* ========== 金句高亮 ========== */
+        .highlight { font-size: 1.3em; font-weight: 800; display: block; margin: 20px 0; }
+        .highlight .hl { color: #00ff88; }
+        .highlight .ac { color: #00ccff; }
+        .highlight .gold { color: #ffaa00; }
+
         .slogan { font-size: 2rem; font-weight: bold; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 30px; }
-        
+
         .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #00ff88, #00ccff, #ff3366); z-index: 100; transition: width 0.3s; }
         .dots { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff30; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff30; cursor: pointer; transition: all 0.3s; }
         .dot.active { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
-        
+
         .logo { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); color: #00ff8899; letter-spacing: 6px; z-index: 100; }
         .corner { position: fixed; width: 40px; height: 40px; border: 1px solid #00ff8840; z-index: 100; }
         .corner.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
         .corner.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
         .corner.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
         .corner.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
-        
+
         .music-btn { position: fixed; bottom: 30px; right: 30px; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,255,136,0.2); border: 1px solid #00ff88; color: #00ff88; cursor: pointer; z-index: 100; font-size: 18px; }
         .music-btn:hover { background: rgba(0,255,136,0.4); }
+
+        /* ========== Scene 7 逐字动画 ========== */
+        .word { opacity: 0; transform: translateY(10px); display: inline-block; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .word.show { opacity: 1; transform: translateY(0); }
+        .slogan-wrap { overflow: hidden; }
+        .slogan .word { font-size: inherit; font-weight: inherit; background: inherit; -webkit-background-clip: inherit; -webkit-text-fill-color: inherit; }
+
+        /* Scene 0 恢复旧样式兼容 */
+        .title { font-size: 4rem; font-weight: 900; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #666; margin-top: 20px; letter-spacing: 8px; }
+        .tagline { color: #00ff8899; margin-top: 15px; font-size: 1rem; letter-spacing: 4px; }
     </style>
 </head>
 <body>
@@ -50,117 +85,243 @@
     <div class="logo">MISSIONGET</div>
     <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
     <button class="music-btn" id="musicBtn">🔇</button>
-    
-    <!-- Scene 0: 标题 -->
+
+    <!-- Scene 0: 标题 - 渐入动画 -->
     <div class="scene" id="scene0">
-        <div class="title">MISSIONGET</div>
-        <div class="subtitle">一 个 人 的 公 司</div>
+        <div class="scene0-title-wrap">
+            <div class="scene0-animate scene0-title" id="s0-title">MISSIONGET</div>
+        </div>
+        <div class="scene0-animate scene0-subtitle" id="s0-sub">一 个 人 的 操 作 系 统</div>
+        <div class="scene0-animate scene0-tagline" id="s0-tag">AI 时代，你的事业起点</div>
     </div>
-    
-    <!-- Scene 1: 痛点 -->
+
+    <!-- Scene 1: 痛点 - 打字机效果 -->
     <div class="scene" id="scene1">
         <div class="text-block">
-            <div class="text-line">曾经，他只是一个<span class="hl">普通的自由职业者</span></div>
-            <div class="text-line">市面上的<span class="ac">AI 工具</span>越来越多</div>
-            <div class="text-line">但它们只解决一个问题：<span class="hl">如何完成工作</span></div>
-            <div class="text-line">没有人解决另一个问题：<span class="ac">工作从哪里来？</span></div>
+            <div class="text-line">你每天都在用 AI 工具</div>
+            <div class="text-line">却还在问自己一个问题：</div>
+            <div class="highlight" id="s1-q1">
+                <span class="hl">明天，活儿在哪？</span>
+            </div>
+            <div class="text-line">没有甲方，没有方向，没有安全感</div>
+            <div class="text-line">一个人战斗——这是<span class="ac">自由职业的真相</span></div>
         </div>
     </div>
-    
+
     <!-- Scene 2: 发现平台 -->
     <div class="scene" id="scene2">
         <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/00-intro.png">
         <div class="text-block" style="margin-top:20px">
-            <div class="text-line">直到他发现了 <span class="hl">MissionGet</span> —— <span class="ac">工作的源头</span></div>
-            <div class="text-line">任务大厅里<span class="hl">海量的需求</span>，等待着他来承接</div>
+            <div class="text-line">然后，你遇见了 <span class="hl">MissionGet</span></div>
+            <div class="text-line">不是又一个工具，是一套<span class="ac">操作系统</span></div>
+            <div class="text-line">一个人从零开始，需要的一切——</div>
+            <div class="text-line"><span class="hl">需求、资金、成长</span>，这里全都有</div>
         </div>
     </div>
-    
-    <!-- Scene 3: 浏览任务 -->
+
+    <!-- Scene 3: 找活儿 -->
     <div class="scene" id="scene3">
         <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/02-bounty-board.png">
         <div class="text-block" style="margin-top:20px">
-            <div class="text-line">他选择了一个<span class="ac">远程开发任务</span>，开始工作</div>
+            <div class="text-line">你打开任务大厅</div>
+            <div class="highlight">
+                <span class="hl">以前，是你</span><span class="ac">找</span><span class="hl">甲方</span><br>
+                <span class="hl">现在，是你</span><span class="ac">选</span><span class="hl">任务</span>
+            </div>
+            <div class="text-line">平台上的需求源源不断</div>
+            <div class="text-line">你，终于不用再等</div>
         </div>
     </div>
-    
-    <!-- Scene 4: 任务进行中 -->
+
+    <!-- Scene 4: 工作中 -->
     <div class="scene" id="scene4">
         <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/12-work-interface.png">
         <div class="text-block" style="margin-top:20px">
-            <div class="text-line">他开始<span class="ac">远程开发任务</span>，AI助手全程协助</div>
-            <div class="text-line">任务完成，甲方<span class="gold">即时确认</span></div>
+            <div class="text-line"><span class="ac">AI 助手</span>全程在线</div>
+            <div class="text-line">写代码、做设计、写文案……</div>
+            <div class="text-line">以前需要一个团队做的事</div>
+            <div class="text-line">现在，你<span class="hl">一个人就够了</span></div>
+            <div class="text-line">交付完成，甲方即时确认</div>
+            <div class="text-line">你第一次感受到什么叫"<span class="hl">高效</span>"</div>
         </div>
     </div>
-    
-    <!-- Scene 5: 收入到账 -->
+
+    <!-- Scene 5: 收款 -->
     <div class="scene" id="scene5">
-        <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/07-wallet.png">
+        <img class="screenshot" src="screenshots/07-wallet.png">
         <div class="text-block" style="margin-top:20px">
-            <div class="text-line">收入<span class="gold">秒到账</span>，每一次付出都有保障</div>
-            <div class="text-line">总资产 <span class="gold">¥6,500</span> 可提现</div>
+            <div class="highlight">
+                <span class="gold">收入，秒到账</span>
+            </div>
+            <div class="text-line">不是月底对账，不是催款等消息</div>
+            <div class="text-line">每完成一单，账户里就多一笔</div>
+            <div class="highlight">
+                <span class="hl">这是</span><span class="ac">确定感</span>
+            </div>
         </div>
     </div>
-    
-    <!-- Scene 6: 角色成长 -->
+
+    <!-- Scene 6: 成长 -->
     <div class="scene" id="scene6">
         <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/04-character.png">
         <div class="text-block" style="margin-top:20px">
-            <div class="text-line">随着经验积累，他的<span class="hl">等级不断提升</span></div>
-            <div class="text-line">这不只是<span class="hl">收入的增长</span>，更是<span class="ac">人生的蜕变</span></div>
-            <div class="text-line"><span class="hl">一人公司</span>，一个人就是一支军队</div>
+            <div class="text-line">你看着自己的等级和排名</div>
+            <div class="text-line">每一天，都在涨</div>
+            <div class="text-line">从接第一单，到每天都有活儿</div>
+            <div class="text-line">从一个人，到真正的<span class="hl">"一人公司"</span></div>
+            <div class="text-line">你不是在打工</div>
+            <div class="text-line">你是在<span class="ac">经营自己的事业</span></div>
         </div>
     </div>
-    
-    <!-- Scene 7: 结尾 -->
+
+    <!-- Scene 7: 结尾 - 逐字动画 -->
     <div class="scene" id="scene7">
         <div class="text-block">
-            <div class="text-line">这就是<span class="hl">未来工作方式</span></div>
-            <div class="text-line">从 <span class="ac">MissionGet</span> 开始</div>
-            <div class="slogan">工作 · 找 MissionGet</div>
+            <div class="text-line">这，就是未来工作的方式</div>
+            <div class="text-line">不是打工，不是外包</div>
+            <div class="text-line">是<span class="hl">一个人，一套系统，一个事业</span></div>
+            <div class="slogan-wrap" id="slogan-wrap"></div>
+            <div class="tagline" style="margin-top:20px; letter-spacing:4px" id="s7-tagline">你的操作系统</div>
         </div>
     </div>
-    
+
     <div class="dots" id="dots"></div>
-    
+
     <script>
         const scenes = [
-            { id: 0, duration: 2500 },
-            { id: 1, duration: 4500 },
-            { id: 2, duration: 4000 },
-            { id: 3, duration: 3500 },
-            { id: 4, duration: 4000 },
-            { id: 5, duration: 4000 },
-            { id: 6, duration: 4500 },
-            { id: 7, duration: 6000 }
+            { id: 0, duration: 3500 },
+            { id: 1, duration: 6000 },
+            { id: 2, duration: 4500 },
+            { id: 3, duration: 5500 },
+            { id: 4, duration: 5500 },
+            { id: 5, duration: 4500 },
+            { id: 6, duration: 5000 },
+            { id: 7, duration: 8000 }
         ];
-        
+
         let current = 0;
         let timer;
-        
+
+        // ========== Scene 0 渐入动画 ==========
+        function animateScene0() {
+            const els = ['s0-title', 's0-sub', 's0-tag'];
+            els.forEach((id, i) => {
+                setTimeout(() => {
+                    document.getElementById(id).classList.add('in');
+                }, i * 300);
+            });
+        }
+
+        // ========== Scene 1 打字机效果 ==========
+        function typewrite(el, callback) {
+            const text = el.textContent;
+            el.textContent = '';
+            el.classList.add('typing');
+            let i = 0;
+            const interval = setInterval(() => {
+                el.textContent += text[i];
+                i++;
+                if (i >= text.length) {
+                    clearInterval(interval);
+                    el.classList.remove('typing');
+                    el.classList.add('done');
+                    if (callback) setTimeout(callback, 200);
+                }
+            }, 60);
+        }
+
+        // ========== Scene 7 逐字动画 ==========
+        function animateSlogan() {
+            const wrap = document.getElementById('slogan-wrap');
+            const text = '工作 · 找 MissionGet';
+            wrap.innerHTML = '';
+
+            // 逐字包装
+            [...text].forEach((char, i) => {
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                wrap.appendChild(span);
+            });
+
+            // 逐字出现
+            const words = wrap.querySelectorAll('.word');
+            words.forEach((w, i) => {
+                setTimeout(() => w.classList.add('show'), i * 120);
+            });
+
+            // tagline 渐入
+            const tagline = document.getElementById('s7-tagline');
+            tagline.style.opacity = '0';
+            tagline.style.transform = 'translateY(10px)';
+            tagline.style.transition = 'all 0.6s ease';
+            setTimeout(() => {
+                tagline.style.opacity = '1';
+                tagline.style.transform = 'translateY(0)';
+            }, words.length * 120 + 500);
+        }
+
         function showScene(index) {
             // Hide all scenes
             document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.text-line').forEach(t => t.classList.remove('show'));
-            
-            // Show current scene
+            document.querySelectorAll('.highlight').forEach(t => t.classList.remove('show'));
+
+            // Reset Scene 0 elements
+            ['s0-title', 's0-sub', 's0-tag'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('in');
+            });
+
             const scene = document.getElementById('scene' + index);
             scene.classList.add('active');
-            
-            // Show text lines immediately
-            scene.querySelectorAll('.text-line').forEach((t, i) => {
-                setTimeout(() => t.classList.add('show'), i * 200);
-            });
-            
-            // Update progress
+
+            // Scene 0 渐入
+            if (index === 0) {
+                animateScene0();
+            }
+
+            // Scene 1 打字机
+            if (index === 1) {
+                const q1 = document.getElementById('s1-q1');
+                scene.querySelectorAll('.text-line').forEach((t, i) => {
+                    setTimeout(() => t.classList.add('show'), i * 200);
+                });
+                // 前4行先出
+                setTimeout(() => {
+                    q1.classList.add('show');
+                    setTimeout(() => {
+                        const hl = q1.querySelector('.hl');
+                        if (hl) typewrite(hl, () => {
+                            scene.querySelectorAll('.text-line').forEach((t, i) => {
+                                if (i >= 3) setTimeout(() => t.classList.add('show'), (i - 3) * 300);
+                            });
+                        });
+                    }, 200);
+                }, 900);
+            } else {
+                scene.querySelectorAll('.text-line').forEach((t, i) => {
+                    setTimeout(() => t.classList.add('show'), i * 200);
+                });
+                scene.querySelectorAll('.highlight').forEach((t, i) => {
+                    setTimeout(() => t.classList.add('show'), i * 200 + 100);
+                });
+            }
+
+            // Scene 7 逐字
+            if (index === 7) {
+                animateSlogan();
+            }
+
+            // Progress
             const progress = ((index + 1) / scenes.length) * 100;
             document.getElementById('progress').style.width = progress + '%';
-            
-            // Update dots
+
+            // Dots
             document.querySelectorAll('.dot').forEach((d, i) => {
                 d.classList.toggle('active', i === index);
             });
-            
+
             // Next scene
             clearTimeout(timer);
             timer = setTimeout(() => {
@@ -172,8 +333,8 @@
                 }
             }, scenes[index].duration);
         }
-        
-        // Create dots
+
+        // Dots
         const dotsContainer = document.getElementById('dots');
         scenes.forEach((_, i) => {
             const dot = document.createElement('div');
@@ -181,43 +342,35 @@
             dot.onclick = () => { current = i; showScene(i); };
             dotsContainer.appendChild(dot);
         });
-        
+
         // Start
         setTimeout(() => showScene(0), 300);
-        
+
         // Click to advance
         document.onclick = (e) => {
-            // Don't advance if clicking music button
             if (e.target.id === 'musicBtn') return;
-            
             clearTimeout(timer);
             current = (current + 1) % scenes.length;
             showScene(current);
         };
-        
-        // Music - 需要用户交互后才能播放
+
+        // Music
         const musicBtn = document.getElementById('musicBtn');
         const audio = new Audio('https://cdn.pixabay.com/audio/2024/11/04/audio_6b7c0e0b0e.mp3');
         audio.loop = true;
         audio.volume = 0.4;
-        
         let musicPlaying = false;
         musicBtn.onclick = (e) => {
             e.stopPropagation();
             if (musicPlaying) {
                 audio.pause();
                 musicBtn.textContent = '🔇';
-                musicBtn.title = '点击播放音乐';
             } else {
                 audio.play().catch(() => {});
                 musicBtn.textContent = '🔊';
-                musicBtn.title = '点击静音';
             }
             musicPlaying = !musicPlaying;
         };
-        
-        // 提示用户点击开启音乐
-        musicBtn.title = '点击播放音乐';
     </script>
 </body>
 </html>
