@@ -66,6 +66,22 @@
         .music-btn { position: fixed; bottom: 30px; right: 30px; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,255,136,0.2); border: 1px solid #00ff88; color: #00ff88; cursor: pointer; z-index: 100; font-size: 18px; }
         .music-btn:hover { background: rgba(0,255,136,0.4); }
 
+        .scene7-brand {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scene7-brand.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
         /* ========== Scene 7 逐字动画 ========== */
         .word { opacity: 0; transform: translateY(10px); display: inline-block; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .word.show { opacity: 1; transform: translateY(0); }
@@ -99,10 +115,7 @@
     <div class="scene" id="scene1">
         <div class="text-block">
             <div class="text-line">你每天都在用 AI 工具</div>
-            <div class="text-line">却还在问自己一个问题：</div>
-            <div class="highlight" id="s1-q1">
-                <span class="hl">明天，活儿在哪？</span>
-            </div>
+            <div class="text-line">却还在问自己：<span class="hl">明天，活儿在哪？</span></div>
             <div class="text-line">没有甲方，没有方向，没有安全感</div>
             <div class="text-line">一个人战斗——这是<span class="ac">自由职业的真相</span></div>
         </div>
@@ -128,8 +141,7 @@
                 <span class="hl">以前，是你</span><span class="ac">找</span><span class="hl">甲方</span><br>
                 <span class="hl">现在，是你</span><span class="ac">选</span><span class="hl">任务</span>
             </div>
-            <div class="text-line">平台上的需求源源不断</div>
-            <div class="text-line">你，终于不用再等</div>
+            <div class="text-line">需求源源不断，你，终于不用再等</div>
         </div>
     </div>
 
@@ -138,11 +150,8 @@
         <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/12-work-interface.png">
         <div class="text-block" style="margin-top:20px">
             <div class="text-line"><span class="ac">AI 助手</span>全程在线</div>
-            <div class="text-line">写代码、做设计、写文案……</div>
-            <div class="text-line">以前需要一个团队做的事</div>
-            <div class="text-line">现在，你<span class="hl">一个人就够了</span></div>
+            <div class="text-line">写代码、做设计、写文案……你<span class="hl">一个人就够了</span></div>
             <div class="text-line">交付完成，甲方即时确认</div>
-            <div class="text-line">你第一次感受到什么叫"<span class="hl">高效</span>"</div>
         </div>
     </div>
 
@@ -153,7 +162,6 @@
             <div class="highlight">
                 <span class="gold">收入，秒到账</span>
             </div>
-            <div class="text-line">不是月底对账，不是催款等消息</div>
             <div class="text-line">每完成一单，账户里就多一笔</div>
             <div class="highlight">
                 <span class="hl">这是</span><span class="ac">确定感</span>
@@ -165,12 +173,9 @@
     <div class="scene" id="scene6">
         <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/04-character.png">
         <div class="text-block" style="margin-top:20px">
-            <div class="text-line">你看着自己的等级和排名</div>
-            <div class="text-line">每一天，都在涨</div>
-            <div class="text-line">从接第一单，到每天都有活儿</div>
+            <div class="text-line">等级在涨，排名在前，每一天都在积累</div>
             <div class="text-line">从一个人，到真正的<span class="hl">"一人公司"</span></div>
-            <div class="text-line">你不是在打工</div>
-            <div class="text-line">你是在<span class="ac">经营自己的事业</span></div>
+            <div class="text-line">你不是在打工——你是在<span class="ac">经营自己的事业</span></div>
         </div>
     </div>
 
@@ -180,6 +185,7 @@
             <div class="text-line">这，就是未来工作的方式</div>
             <div class="text-line">不是打工，不是外包</div>
             <div class="text-line">是<span class="hl">一个人，一套系统，一个事业</span></div>
+            <div class="scene7-brand" id="s7-brand">MissionGet</div>
             <div class="slogan-wrap" id="slogan-wrap"></div>
             <div class="tagline" style="margin-top:20px; letter-spacing:4px" id="s7-tagline">你的操作系统</div>
         </div>
@@ -190,7 +196,7 @@
     <script>
         const scenes = [
             { id: 0, duration: 3500 },
-            { id: 1, duration: 6000 },
+            { id: 1, duration: 4500 },
             { id: 2, duration: 4500 },
             { id: 3, duration: 5500 },
             { id: 4, duration: 5500 },
@@ -283,22 +289,9 @@
 
             // Scene 1 打字机
             if (index === 1) {
-                const q1 = document.getElementById('s1-q1');
                 scene.querySelectorAll('.text-line').forEach((t, i) => {
                     setTimeout(() => t.classList.add('show'), i * 200);
                 });
-                // 前4行先出
-                setTimeout(() => {
-                    q1.classList.add('show');
-                    setTimeout(() => {
-                        const hl = q1.querySelector('.hl');
-                        if (hl) typewrite(hl, () => {
-                            scene.querySelectorAll('.text-line').forEach((t, i) => {
-                                if (i >= 3) setTimeout(() => t.classList.add('show'), (i - 3) * 300);
-                            });
-                        });
-                    }, 200);
-                }, 900);
             } else {
                 scene.querySelectorAll('.text-line').forEach((t, i) => {
                     setTimeout(() => t.classList.add('show'), i * 200);
@@ -310,7 +303,21 @@
 
             // Scene 7 逐字
             if (index === 7) {
-                animateSlogan();
+                const brand = document.getElementById('s7-brand');
+                brand.style.opacity = '0';
+                brand.style.transform = 'scale(0.8)';
+                // 前3行先出
+                scene.querySelectorAll('.text-line').forEach((t, i) => {
+                    setTimeout(() => t.classList.add('show'), i * 200);
+                });
+                // brand 接着出现
+                setTimeout(() => {
+                    brand.classList.add('show');
+                    brand.style.opacity = '1';
+                    brand.style.transform = 'scale(1)';
+                    animateSlogan();
+                }, 800);
+                return;
             }
 
             // Progress
@@ -354,22 +361,47 @@
             showScene(current);
         };
 
-        // Music
+        // 音乐按钮：静音/取消静音
         const musicBtn = document.getElementById('musicBtn');
-        const audio = new Audio('https://cdn.pixabay.com/audio/2024/11/04/audio_6b7c0e0b0e.mp3');
+        const audio = new Audio('bg-music.mp3');
         audio.loop = true;
-        audio.volume = 0.4;
+        audio.volume = 0;
         let musicPlaying = false;
+
+        // 页面加载后自动播放（需用户点击一次触发）
+        function startMusic() {
+            if (musicPlaying) return;
+            audio.play().then(() => {
+                musicPlaying = true;
+                musicBtn.textContent = '🔊';
+                musicBtn.title = '点击静音';
+                // 音量淡入到50%
+                let vol = 0;
+                audio.volume = vol;
+                const fadeIn = setInterval(() => {
+                    vol += 0.05;
+                    if (vol >= 0.5) { vol = 0.5; clearInterval(fadeIn); }
+                    audio.volume = vol;
+                }, 200);
+            }).catch(() => {});
+        }
+
+        // 首次点击页面任意位置自动播放
+        document.addEventListener('click', startMusic, { once: true });
+
+        // 音乐按钮点击：静音/取消静音
         musicBtn.onclick = (e) => {
             e.stopPropagation();
-            if (musicPlaying) {
+            if (!musicPlaying) {
+                startMusic();
+            } else if (audio.paused) {
+                audio.play();
+                musicBtn.textContent = '🔊';
+            } else {
                 audio.pause();
                 musicBtn.textContent = '🔇';
-            } else {
-                audio.play().catch(() => {});
-                musicBtn.textContent = '🔊';
+                musicBtn.title = '点击播放音乐';
             }
-            musicPlaying = !musicPlaying;
         };
     </script>
 </body>
