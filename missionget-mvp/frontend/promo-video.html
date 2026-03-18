@@ -88,6 +88,18 @@
         .slogan-wrap { overflow: hidden; }
         .slogan .word { font-size: inherit; font-weight: inherit; background: inherit; -webkit-background-clip: inherit; -webkit-text-fill-color: inherit; }
 
+            /* Scene 7 tagline 大字 */
+            .scene7-tagline {
+                font-size: 1.8rem !important;
+                font-weight: 700;
+                letter-spacing: 4px;
+                color: #00ff8899 !important;
+                margin-top: 20px;
+                /* 和其他 text-line 同时出现，无需淡入延迟 */
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
         /* Scene 0 恢复旧样式兼容 */
         .title { font-size: 4rem; font-weight: 900; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #666; margin-top: 20px; letter-spacing: 8px; }
@@ -187,7 +199,7 @@
             <div class="text-line">是<span class="hl">一个人，一套系统，一个事业</span></div>
             <div class="scene7-brand" id="s7-brand">MissionGet</div>
             <div class="slogan-wrap" id="slogan-wrap"></div>
-            <div class="tagline" style="margin-top:20px; letter-spacing:4px" id="s7-tagline">你的操作系统</div>
+            <div class="scene7-tagline" id="s7-tagline">开启未来工作新范式</div>
         </div>
     </div>
 
@@ -256,15 +268,7 @@
                 setTimeout(() => w.classList.add('show'), i * 120);
             });
 
-            // tagline 渐入
-            const tagline = document.getElementById('s7-tagline');
-            tagline.style.opacity = '0';
-            tagline.style.transform = 'translateY(10px)';
-            tagline.style.transition = 'all 0.6s ease';
-            setTimeout(() => {
-                tagline.style.opacity = '1';
-                tagline.style.transform = 'translateY(0)';
-            }, words.length * 120 + 500);
+        // tagline 已经在 .text-line 阶段同时出现，无需额外动画
         }
 
         function showScene(index) {
