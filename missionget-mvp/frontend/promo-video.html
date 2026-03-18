@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>MissionGet - 宣传视频</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0f; overflow: hidden; width: 100vw; height: 100vh; font-family: sans-serif; }
+        
+        .bg { position: fixed; inset: 0; background: linear-gradient(135deg, #0a0a0f, #1a1a2e); z-index: 0; }
+        .grid { position: fixed; inset: 0; background-image: linear-gradient(#00ff8805 1px, transparent 1px), linear-gradient(90deg, #00ff8805 1px, transparent 1px); background-size: 40px 40px; z-index: 1; }
+        
+        .scene { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 10; }
+        .scene.active { display: flex; }
+        
+        .title { font-size: 4rem; font-weight: 900; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #666; margin-top: 20px; letter-spacing: 8px; }
+        
+        .screenshot { max-width: 65%; max-height: 45%; margin-top: 60px; border-radius: 12px; box-shadow: 0 0 60px rgba(0,255,136,0.3); border: 1px solid #00ff8840; }
+        
+        .text-block { text-align: center; max-width: 800px; padding: 40px; background: rgba(0,0,0,0.7); border-radius: 16px; border: 1px solid #00ff8830; }
+        .text-line { font-size: 1.6rem; color: #fff; margin: 15px 0; opacity: 0; transform: translateY(20px); transition: all 0.5s; }
+        .text-line.show { opacity: 1; transform: translateY(0); }
+        .text-line .hl { color: #00ff88; font-weight: bold; }
+        .text-line .ac { color: #00ccff; font-weight: bold; }
+        .text-line .gold { color: #ffaa00; font-weight: bold; }
+        
+        .slogan { font-size: 2rem; font-weight: bold; background: linear-gradient(90deg, #00ff88, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 30px; }
+        
+        .progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #00ff88, #00ccff, #ff3366); z-index: 100; transition: width 0.3s; }
+        .dots { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff30; }
+        .dot.active { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        
+        .logo { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); color: #00ff8899; letter-spacing: 6px; z-index: 100; }
+        .corner { position: fixed; width: 40px; height: 40px; border: 1px solid #00ff8840; z-index: 100; }
+        .corner.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .corner.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        .corner.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        .corner.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+        
+        .music-btn { position: fixed; bottom: 30px; right: 30px; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,255,136,0.2); border: 1px solid #00ff88; color: #00ff88; cursor: pointer; z-index: 100; font-size: 18px; }
+        .music-btn:hover { background: rgba(0,255,136,0.4); }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+    <div class="bg"></div>
+    <div class="grid"></div>
+    <div class="logo">MISSIONGET</div>
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <button class="music-btn" id="musicBtn">🔇</button>
+    
+    <!-- Scene 0: 标题 -->
+    <div class="scene" id="scene0">
+        <div class="title">MISSIONGET</div>
+        <div class="subtitle">一 个 人 的 公 司</div>
+    </div>
+    
+    <!-- Scene 1: 痛点 -->
+    <div class="scene" id="scene1">
+        <div class="text-block">
+            <div class="text-line">曾经，他只是一个<span class="hl">普通的自由职业者</span></div>
+            <div class="text-line">市面上的<span class="ac">AI 工具</span>越来越多</div>
+            <div class="text-line">但它们只解决一个问题：<span class="hl">如何完成工作</span></div>
+            <div class="text-line">没有人解决另一个问题：<span class="ac">工作从哪里来？</span></div>
+        </div>
+    </div>
+    
+    <!-- Scene 2: 发现平台 -->
+    <div class="scene" id="scene2">
+        <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/00-intro.png">
+        <div class="text-block" style="margin-top:20px">
+            <div class="text-line">直到他发现了 <span class="hl">MissionGet</span> —— <span class="ac">工作的源头</span></div>
+            <div class="text-line">任务大厅里<span class="hl">海量的需求</span>，等待着他来承接</div>
+        </div>
+    </div>
+    
+    <!-- Scene 3: 浏览任务 -->
+    <div class="scene" id="scene3">
+        <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/02-bounty-board.png">
+        <div class="text-block" style="margin-top:20px">
+            <div class="text-line">他选择了一个<span class="ac">远程开发任务</span>，开始工作</div>
+        </div>
+    </div>
+    
+    <!-- Scene 4: 任务进行中 -->
+    <div class="scene" id="scene4">
+        <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/12-work-interface.png">
+        <div class="text-block" style="margin-top:20px">
+            <div class="text-line">他开始<span class="ac">远程开发任务</span>，AI助手全程协助</div>
+            <div class="text-line">任务完成，甲方<span class="gold">即时确认</span></div>
+        </div>
+    </div>
+    
+    <!-- Scene 5: 收入到账 -->
+    <div class="scene" id="scene5">
+        <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/07-wallet.png">
+        <div class="text-block" style="margin-top:20px">
+            <div class="text-line">收入<span class="gold">秒到账</span>，每一次付出都有保障</div>
+            <div class="text-line">总资产 <span class="gold">¥6,500</span> 可提现</div>
+        </div>
+    </div>
+    
+    <!-- Scene 6: 角色成长 -->
+    <div class="scene" id="scene6">
+        <img class="screenshot" src="https://raw.githubusercontent.com/MissionGet/Demo/main/screenshots/04-character.png">
+        <div class="text-block" style="margin-top:20px">
+            <div class="text-line">随着经验积累，他的<span class="hl">等级不断提升</span></div>
+            <div class="text-line">这不只是<span class="hl">收入的增长</span>，更是<span class="ac">人生的蜕变</span></div>
+            <div class="text-line"><span class="hl">一人公司</span>，一个人就是一支军队</div>
+        </div>
+    </div>
+    
+    <!-- Scene 7: 结尾 -->
+    <div class="scene" id="scene7">
+        <div class="text-block">
+            <div class="text-line">这就是<span class="hl">未来工作方式</span></div>
+            <div class="text-line">从 <span class="ac">MissionGet</span> 开始</div>
+            <div class="slogan">工作 · 找 MissionGet</div>
+        </div>
+    </div>
+    
+    <div class="dots" id="dots"></div>
+    
+    <script>
+        const scenes = [
+            { id: 0, duration: 2500 },
+            { id: 1, duration: 4500 },
+            { id: 2, duration: 4000 },
+            { id: 3, duration: 3500 },
+            { id: 4, duration: 4000 },
+            { id: 5, duration: 4000 },
+            { id: 6, duration: 4500 },
+            { id: 7, duration: 6000 }
+        ];
+        
+        let current = 0;
+        let timer;
+        
+        function showScene(index) {
+            // Hide all scenes
+            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.text-line').forEach(t => t.classList.remove('show'));
+            
+            // Show current scene
+            const scene = document.getElementById('scene' + index);
+            scene.classList.add('active');
+            
+            // Show text lines immediately
+            scene.querySelectorAll('.text-line').forEach((t, i) => {
+                setTimeout(() => t.classList.add('show'), i * 200);
+            });
+            
+            // Update progress
+            const progress = ((index + 1) / scenes.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            
+            // Update dots
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.toggle('active', i === index);
+            });
+            
+            // Next scene
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                current = (current + 1) % scenes.length;
+                if (current === 0) {
+                    setTimeout(() => showScene(0), 500);
+                } else {
+                    showScene(current);
+                }
+            }, scenes[index].duration);
+        }
+        
+        // Create dots
+        const dotsContainer = document.getElementById('dots');
+        scenes.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => { current = i; showScene(i); };
+            dotsContainer.appendChild(dot);
+        });
+        
+        // Start
+        setTimeout(() => showScene(0), 300);
+        
+        // Click to advance
+        document.onclick = (e) => {
+            // Don't advance if clicking music button
+            if (e.target.id === 'musicBtn') return;
+            
+            clearTimeout(timer);
+            current = (current + 1) % scenes.length;
+            showScene(current);
+        };
+        
+        // Music - 需要用户交互后才能播放
+        const musicBtn = document.getElementById('musicBtn');
+        const audio = new Audio('https://cdn.pixabay.com/audio/2024/11/04/audio_6b7c0e0b0e.mp3');
+        audio.loop = true;
+        audio.volume = 0.4;
+        
+        let musicPlaying = false;
+        musicBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (musicPlaying) {
+                audio.pause();
+                musicBtn.textContent = '🔇';
+                musicBtn.title = '点击播放音乐';
+            } else {
+                audio.play().catch(() => {});
+                musicBtn.textContent = '🔊';
+                musicBtn.title = '点击静音';
+            }
+            musicPlaying = !musicPlaying;
+        };
+        
+        // 提示用户点击开启音乐
+        musicBtn.title = '点击播放音乐';
+    </script>
+</body>
+</html>
